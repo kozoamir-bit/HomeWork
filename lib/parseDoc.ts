@@ -17,6 +17,14 @@ export type DayData = {
   reminder: string | null;
 };
 
+const HE_DAYS: Record<number, string> = {
+  0: "יום ראשון",
+  1: "יום שני",
+  2: "יום שלישי",
+  3: "יום רביעי",
+  4: "יום חמישי",
+  5: "יום שישי",
+};
 
 /** Returns a Date object in Israel local time */
 function israelNow(): Date {
@@ -49,6 +57,9 @@ function parseTable(html: string): string[][] {
         .replace(/&lt;/g, "<")
         .replace(/&gt;/g, ">")
         .replace(/[ \t]+/g, " ")
+        .replace(/\n /g, "\n")
+        .replace(/ \n/g, "\n")
+        .replace(/\n{2,}/g, "\n")
         .trim();
       cells.push(text);
     }
@@ -89,7 +100,8 @@ export async function fetchDayData(): Promise<DayData | null> {
   }
   if (colIndex === -1) return null; // Doc not yet updated for this week
 
-  const dateLabel = headerRow[colIndex].replace(/\s+/g, " ").trim();
+  // Build dateLabel from JS date — doc headers may have wrong day names
+  const dateLabel = `${HE_DAYS[dayOfWeek]} ${todayPattern(today)}`;
 
   // Helper: get cell text at today's column for a given row index
   const cell = (rowIdx: number): string =>

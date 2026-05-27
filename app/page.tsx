@@ -68,6 +68,17 @@ function Star() {
   );
 }
 
+function ContentLines({ text }: { text: string }) {
+  const lines = text.split("\n").filter((l) => l.trim() !== "");
+  return (
+    <>
+      {lines.map((line, i) => (
+        <span key={i} className={s.contentLine}>{line}</span>
+      ))}
+    </>
+  );
+}
+
 function SubjectList({ items, emptyMsg }: { items: SubjectEntry[]; emptyMsg: string }) {
   if (items.length === 0) {
     return <p className={s.emptyItems}>{emptyMsg}</p>;
@@ -79,7 +90,9 @@ function SubjectList({ items, emptyMsg }: { items: SubjectEntry[]; emptyMsg: str
           <span className={s.badge} style={{ background: COLORS[item.subject] ?? "#666" }}>
             {item.subject}
           </span>
-          <p className={s.entryText}>{item.content}</p>
+          <p className={s.entryText}>
+            <ContentLines text={item.content} />
+          </p>
         </div>
       ))}
     </>

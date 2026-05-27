@@ -152,10 +152,17 @@
   font-size: 14px;
   line-height: 1.65;
   padding-right: 4px;
-  white-space: pre-line;
   margin: 0;
   text-align: right;
   direction: rtl;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.contentLine {
+  display: block;
+  text-align: right;
 }
 
 /* ── Empty / success states ───────────────────────────────────────────────── */

@@ -33,11 +33,6 @@ function israelNow(): Date {
   );
 }
 
-/** e.g. "27.5" for May 27 */
-function todayPattern(d: Date): string {
-  return `${d.getDate()}.${d.getMonth() + 1}`;
-}
-
 /** Minimal HTML table parser – no dependencies needed */
 function parseTable(html: string): string[][] {
   const rows: string[][] = [];
@@ -87,21 +82,20 @@ export async function fetchDayData(): Promise<DayData | null> {
   const dayOfWeek = today.getDay(); // 0=Sun … 6=Sat
   if (dayOfWeek === 6) return null; // Shabbat
 
-  const pattern = todayPattern(today);
+  const todayName = HE_DAYS[dayOfWeek];
 
-  // ── Find column index by matching today's date in the header row ──────────
+  // ── Find column by Hebrew day name (dates in the doc may be wrong) ─────────
   const headerRow = rows[0];
   let colIndex = -1;
   for (let i = 0; i < headerRow.length; i++) {
-    if (headerRow[i].includes(pattern)) {
+    if (headerRow[i].includes(todayName)) {
       colIndex = i;
       break;
     }
   }
-  if (colIndex === -1) return null; // Doc not yet updated for this week
+  if (colIndex === -1) return null;
 
-  // Build dateLabel from JS date — doc headers may have wrong day names
-  const dateLabel = `${HE_DAYS[dayOfWeek]} ${todayPattern(today)}`;
+  const dateLabel = `${todayName} ${today.getDate()}.${today.getMonth() + 1}`;
 
   // Helper: get cell text at today's column for a given row index
   const cell = (rowIdx: number): string =>

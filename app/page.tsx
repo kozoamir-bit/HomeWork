@@ -214,6 +214,14 @@ export default async function Home() {
         {/* Spacer for chalk ledge */}
         <div className={s.ledgeSpacer} />
 
+        {/* Morning reading */}
+        {data.morningReading && (
+          <div className={s.morningReading}>
+            <BookIcon />
+            <span><ContentLines text={data.morningReading} /></span>
+          </div>
+        )}
+
         {/* Reminder */}
         {data.reminder && (
           <div className={s.reminder}>

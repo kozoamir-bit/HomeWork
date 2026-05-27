@@ -14,6 +14,7 @@ export type DayData = {
   dateLabel: string;
   learned: SubjectEntry[];
   homework: SubjectEntry[];
+  morningReading: string | null;
   reminder: string | null;
 };
 
@@ -130,14 +131,17 @@ export async function fetchDayData(): Promise<DayData | null> {
     .map((r) => ({ subject: subject(r), content: cell(r) }))
     .filter((e) => e.content);
 
-  // Reminder – search only within table rows for a "שימו לב" label
+  // Morning reading – merged cell, content is always in column 1
+  let morningReading: string | null = null;
   let reminder: string | null = null;
   for (const row of rows) {
     const label = row[0]?.trim() ?? "";
-    if (label.includes("שימו לב") || label.includes("הערה")) {
-      const content = row[colIndex]?.trim();
+    if (label.includes("קריאת בוקר")) {
+      const content = (row[colIndex] || row[1])?.trim();
+      if (content) morningReading = content;
+    } else if (label.includes("שימו לב") || label.includes("הערה")) {
+      const content = (row[colIndex] || row[1])?.trim();
       if (content) reminder = content;
-      break;
     }
   }
 
@@ -145,6 +149,7 @@ export async function fetchDayData(): Promise<DayData | null> {
     dateLabel,
     learned,
     homework,
+    morningReading,
     reminder,
   };
 }

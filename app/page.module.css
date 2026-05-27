@@ -197,6 +197,29 @@
 
 .ledgeSpacer { height: 18px; }
 
+/* ── Morning reading banner ───────────────────────────────────────────────── */
+
+.morningReading {
+  background: #E8F5E9;
+  border: 3px solid #66BB6A;
+  border-radius: 14px;
+  padding: 12px 18px;
+  font-size: 14px;
+  color: #1B5E20;
+  font-weight: 600;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: right;
+  direction: rtl;
+  margin-bottom: 12px;
+}
+
+.morningReading svg { flex-shrink: 0; margin-top: 2px; }
+.morningReading svg path, .morningReading svg line {
+  stroke: #2E7D32;
+}
+
 /* ── Reminder banner ──────────────────────────────────────────────────────── */
 
 .reminder {

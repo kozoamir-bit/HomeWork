@@ -1,0 +1,226 @@
+/* app/page.module.css */
+
+@keyframes float1 {
+  0%, 100% { transform: translateY(0) rotate(-18deg); }
+  50%       { transform: translateY(-8px) rotate(-18deg); }
+}
+@keyframes float2 {
+  0%, 100% { transform: translateY(0) rotate(12deg); }
+  50%       { transform: translateY(-6px) rotate(12deg); }
+}
+@keyframes sparkle {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%       { opacity: 1;    transform: scale(1.2); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Page ─────────────────────────────────────────────────────────────────── */
+
+.page {
+  min-height: 100vh;
+  background: #FDFCF7;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  padding: 24px 16px 48px;
+  position: relative;
+  overflow: hidden;
+  direction: rtl;
+}
+
+.content {
+  max-width: 680px;
+  margin: 0 auto;
+  animation: fadeUp 0.45s ease-out;
+}
+
+/* ── Floating decorations ─────────────────────────────────────────────────── */
+
+.floater {
+  position: absolute;
+  pointer-events: none;
+}
+.f1 { top: 18px; right: 18px; animation: float1 3.5s ease-in-out infinite; opacity: 0.7; }
+.f2 { top: 14px; left: 18px;  animation: float2 4s   ease-in-out infinite; opacity: 0.65; }
+.f3 { bottom: 70px; right: 18px; animation: sparkle 2.4s ease-in-out infinite; opacity: 0.6; }
+.f4 { bottom: 70px; left: 18px;  animation: float2 4.5s ease-in-out infinite 0.5s; opacity: 0.6; }
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+
+.header {
+  text-align: center;
+  margin-bottom: 28px;
+  padding-top: 48px; /* clears floaters */
+}
+
+.title {
+  font-size: clamp(26px, 6vw, 38px);
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 4px;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #888;
+  margin: 0 0 12px;
+}
+
+.dateBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #FFD93D;
+  color: #5D3A00;
+  padding: 7px 22px;
+  border-radius: 20px;
+  font-size: 15px;
+  font-weight: 700;
+  border: 3px solid #E6B800;
+}
+
+/* ── Boards grid ──────────────────────────────────────────────────────────── */
+
+.boards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+@media (max-width: 500px) {
+  .boards { grid-template-columns: 1fr; }
+}
+
+/* ── Chalkboard ───────────────────────────────────────────────────────────── */
+
+.board {
+  background: #243E25;
+  border: 9px solid #8B6228;
+  border-radius: 6px;
+  padding: 18px;
+  position: relative;
+}
+
+/* Chalk ledge */
+.board::after {
+  content: '';
+  position: absolute;
+  bottom: -15px;
+  left: -9px;
+  right: -9px;
+  height: 13px;
+  background: #7A5520;
+  border-radius: 0 0 4px 4px;
+}
+
+.boardTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: rgba(255, 255, 215, 0.95);
+  font-size: 17px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1.5px dashed rgba(255, 255, 255, 0.2);
+}
+
+/* ── Subject entry ────────────────────────────────────────────────────────── */
+
+.entry {
+  margin-bottom: 12px;
+}
+
+.badge {
+  display: inline-block;
+  color: #fff;
+  padding: 3px 11px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.entryText {
+  color: rgba(255, 255, 238, 0.87);
+  font-size: 14px;
+  line-height: 1.65;
+  padding-right: 4px;
+  white-space: pre-line;
+  margin: 0;
+}
+
+/* ── Empty / success states ───────────────────────────────────────────────── */
+
+.emptyItems {
+  font-size: 14px;
+  color: rgba(255, 255, 200, 0.65);
+  text-align: center;
+  padding: 8px 0;
+}
+
+.successBox {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.successInner {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px dashed rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+  padding: 12px 16px;
+}
+
+.successText {
+  font-size: 13px;
+  color: rgba(255, 255, 200, 0.75);
+  margin: 4px 0 0;
+}
+
+/* ── Ledge spacer ─────────────────────────────────────────────────────────── */
+
+.ledgeSpacer { height: 18px; }
+
+/* ── Reminder banner ──────────────────────────────────────────────────────── */
+
+.reminder {
+  background: #FFF8E0;
+  border: 3px solid #FFD93D;
+  border-radius: 14px;
+  padding: 12px 18px;
+  font-size: 14px;
+  color: #5D3A00;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+}
+
+/* ── Empty-day state ──────────────────────────────────────────────────────── */
+
+.emptyDay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  color: #999;
+  gap: 12px;
+}
+
+.emptyDay svg { opacity: 0.4; }
+
+.emptyDay p {
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+}

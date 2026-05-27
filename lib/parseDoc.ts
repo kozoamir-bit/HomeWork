@@ -44,9 +44,12 @@ function parseTable(html: string): string[][] {
     for (const cell of cellMatches) {
       // Strip tags, decode basic entities, normalise whitespace
       const text = cell
+        .replace(/<\/p>/gi, "\n")
+        .replace(/<\/div>/gi, "\n")
         .replace(/<br\s*\/?>/gi, "\n")
         .replace(/<[^>]+>/g, "")
         .replace(/&nbsp;/g, " ")
+        .replace(/ /g, " ")
         .replace(/&#39;/g, "'")
         .replace(/&amp;/g, "&")
         .replace(/&lt;/g, "<")

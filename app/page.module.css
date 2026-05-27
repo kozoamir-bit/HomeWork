@@ -134,6 +134,7 @@
 
 .entry {
   margin-bottom: 12px;
+  text-align: right;
 }
 
 .badge {
@@ -153,6 +154,8 @@
   padding-right: 4px;
   white-space: pre-line;
   margin: 0;
+  text-align: right;
+  direction: rtl;
 }
 
 /* ── Empty / success states ───────────────────────────────────────────────── */

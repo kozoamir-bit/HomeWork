@@ -161,7 +161,7 @@ export default async function Home() {
           <p className={s.subtitle}>כיתה א׳1</p>
           <span className={s.dateBadge}>
             <CalendarIcon />
-            {data.dayName} · {data.dateLabel}
+            {data.dateLabel}
           </span>
         </header>
 

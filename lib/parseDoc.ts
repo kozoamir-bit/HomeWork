@@ -11,21 +11,12 @@ const DOC_URL =
 export type SubjectEntry = { subject: string; content: string };
 
 export type DayData = {
-  dayName: string;
   dateLabel: string;
   learned: SubjectEntry[];
   homework: SubjectEntry[];
   reminder: string | null;
 };
 
-const HE_DAYS: Record<number, string> = {
-  0: "יום ראשון",
-  1: "יום שני",
-  2: "יום שלישי",
-  3: "יום רביעי",
-  4: "יום חמישי",
-  5: "יום שישי",
-};
 
 /** Returns a Date object in Israel local time */
 function israelNow(): Date {
@@ -130,14 +121,18 @@ export async function fetchDayData(): Promise<DayData | null> {
     .map((r) => ({ subject: subject(r), content: cell(r) }))
     .filter((e) => e.content);
 
-  // Reminder – look for a paragraph containing "שימו לב"
-  const reminderMatch = html.match(/שימו לב[^<]{0,300}/);
-  const reminder = reminderMatch
-    ? reminderMatch[0].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim()
-    : null;
+  // Reminder – search only within table rows for a "שימו לב" label
+  let reminder: string | null = null;
+  for (const row of rows) {
+    const label = row[0]?.trim() ?? "";
+    if (label.includes("שימו לב") || label.includes("הערה")) {
+      const content = row[colIndex]?.trim();
+      if (content) reminder = content;
+      break;
+    }
+  }
 
   return {
-    dayName: HE_DAYS[dayOfWeek] ?? "",
     dateLabel,
     learned,
     homework,

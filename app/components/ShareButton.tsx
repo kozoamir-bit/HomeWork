@@ -8,33 +8,26 @@ export default function ShareButton() {
   const handleShare = async () => {
     setLoading(true);
     try {
-      const html2canvas = (await import("html2canvas")).default;
+      const { toPng } = await import("html-to-image");
       const el = document.querySelector("main") as HTMLElement;
-      const canvas = await html2canvas(el, {
-        useCORS: true,
-        scale: 2,
+
+      const dataUrl = await toPng(el, {
+        pixelRatio: 2,
         backgroundColor: "#FDFCF7",
+        style: { direction: "rtl" },
       });
 
-      const blob = await new Promise<Blob>((resolve) =>
-        canvas.toBlob((b) => resolve(b!), "image/png")
-      );
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
       const file = new File([blob], "לוח-הכיתה.png", { type: "image/png" });
 
       if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: "לוח הכיתה שלנו",
-        });
+        await navigator.share({ files: [file], title: "לוח הכיתה שלנו" });
       } else if (navigator.share) {
-        await navigator.share({
-          title: "לוח הכיתה שלנו",
-          url: window.location.href,
-        });
+        await navigator.share({ title: "לוח הכיתה שלנו", url: window.location.href });
       } else {
-        // Desktop fallback – download image
         const a = document.createElement("a");
-        a.href = canvas.toDataURL("image/png");
+        a.href = dataUrl;
         a.download = "לוח-הכיתה.png";
         a.click();
       }

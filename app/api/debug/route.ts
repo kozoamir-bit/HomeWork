@@ -40,6 +40,22 @@ export async function GET(req: Request) {
   const html = await res.text();
   const rows = parseTable(html);
 
+  // Also extract raw visible text for non-table docs
+  const rawText = html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<\/div>/gi, "\n")
+    .replace(/<\/li>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/ /g, " ")
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, "&")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim()
+    .slice(0, 3000);
+
   const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jerusalem" }));
 
   return NextResponse.json({
@@ -48,5 +64,6 @@ export async function GET(req: Request) {
     dayOfWeek: now.getDay(),
     totalRows: rows.length,
     rows,
+    rawText,
   });
 }

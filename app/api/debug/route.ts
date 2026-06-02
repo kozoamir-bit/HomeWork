@@ -75,5 +75,7 @@ export async function GET(req: Request) {
     totalRows: rows.length,
     rows,
     rawText,
+    htmlSnippet: html.slice(0, 2000),
+    htmlLength: html.length,
   });
 }

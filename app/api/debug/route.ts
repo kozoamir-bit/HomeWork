@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 
-const DOC_URL =
-  "https://docs.google.com/document/u/0/d/1-BKxYj06sTwS69O9nmZQXIV9q5TEem6-So4gRzvKiU8/mobilebasic";
+const DOCS: Record<string, string> = {
+  homework: "https://docs.google.com/document/u/0/d/1-BKxYj06sTwS69O9nmZQXIV9q5TEem6-So4gRzvKiU8/mobilebasic",
+  schedule: "https://docs.google.com/document/u/0/d/1K91Xi_QZXfY0ZJeAVpLR1Cd9NX-fLWrxrReVWzndl8M/mobilebasic",
+};
 
 function parseTable(html: string): string[][] {
   const rows: string[][] = [];
@@ -11,12 +13,16 @@ function parseTable(html: string): string[][] {
     const cellMatches = row.match(/<td[\s\S]*?<\/td>/gi) ?? [];
     for (const cell of cellMatches) {
       const text = cell
+        .replace(/<\/p>/gi, "↵")
+        .replace(/<\/div>/gi, "↵")
         .replace(/<br\s*\/?>/gi, "↵")
         .replace(/<[^>]+>/g, "")
         .replace(/&nbsp;/g, " ")
+        .replace(/ /g, " ")
         .replace(/&#39;/g, "'")
         .replace(/&amp;/g, "&")
         .replace(/[ \t]+/g, " ")
+        .replace(/↵+/g, "↵")
         .trim();
       cells.push(text);
     }
@@ -25,19 +31,22 @@ function parseTable(html: string): string[][] {
   return rows;
 }
 
-export async function GET() {
-  const res = await fetch(DOC_URL, { cache: "no-store" });
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const doc = searchParams.get("doc") ?? "homework";
+  const url = DOCS[doc] ?? DOCS.homework;
+
+  const res = await fetch(url, { cache: "no-store" });
   const html = await res.text();
   const rows = parseTable(html);
 
   const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jerusalem" }));
 
   return NextResponse.json({
+    doc,
     israelTime: now.toISOString(),
     dayOfWeek: now.getDay(),
-    datePattern: `${now.getDate()}.${now.getMonth() + 1}`,
     totalRows: rows.length,
-    headerRow: rows[0],
-    rows: rows.slice(0, 12),
+    rows,
   });
 }

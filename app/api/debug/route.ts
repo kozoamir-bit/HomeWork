@@ -36,7 +36,12 @@ export async function GET(req: Request) {
   const doc = searchParams.get("doc") ?? "homework";
   const url = DOCS[doc] ?? DOCS.homework;
 
-  const res = await fetch(url, { cache: "no-store" });
+  const res = await fetch(url, {
+    cache: "no-store",
+    headers: { "User-Agent": "Mozilla/5.0 (compatible; bot/1.0)" },
+    redirect: "follow",
+  });
+  const httpStatus = res.status;
   const html = await res.text();
   const rows = parseTable(html);
 
@@ -72,10 +77,11 @@ export async function GET(req: Request) {
     doc,
     israelTime: now.toISOString(),
     dayOfWeek: now.getDay(),
+    httpStatus,
+    htmlLength: html.length,
+    htmlSnippet: html.slice(0, 2000),
     totalRows: rows.length,
     rows,
     rawText,
-    htmlSnippet: html.slice(0, 2000),
-    htmlLength: html.length,
   });
 }

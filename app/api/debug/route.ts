@@ -40,8 +40,12 @@ export async function GET(req: Request) {
   const html = await res.text();
   const rows = parseTable(html);
 
-  // Also extract raw visible text for non-table docs
-  const rawText = html
+  // Extract only the doc-content section
+  const docMatch = html.match(/<div[^>]+class="[^"]*doc-content[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/i)
+    ?? html.match(/<div[^>]+class="[^"]*doc[^"]*"[^>]*>([\s\S]{200,})/i);
+  const contentHtml = docMatch ? docMatch[1] : html;
+
+  const rawText = contentHtml
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<\/p>/gi, "\n")
     .replace(/<\/div>/gi, "\n")
@@ -54,7 +58,7 @@ export async function GET(req: Request) {
     .replace(/[ \t]+/g, " ")
     .replace(/\n{3,}/g, "\n\n")
     .trim()
-    .slice(0, 3000);
+    .slice(0, 5000);
 
   const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jerusalem" }));
 

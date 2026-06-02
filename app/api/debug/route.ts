@@ -40,16 +40,22 @@ export async function GET(req: Request) {
   const html = await res.text();
   const rows = parseTable(html);
 
-  // Extract only the doc-content section
-  const docMatch = html.match(/<div[^>]+class="[^"]*doc-content[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/i)
-    ?? html.match(/<div[^>]+class="[^"]*doc[^"]*"[^>]*>([\s\S]{200,})/i);
-  const contentHtml = docMatch ? docMatch[1] : html;
+  // Find body content
+  const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+  const bodyHtml = bodyMatch ? bodyMatch[1] : html;
 
-  const rawText = contentHtml
+  // Strip script and style blocks first, then extract text
+  const cleaned = bodyHtml
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "");
+
+  const rawText = cleaned
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<\/p>/gi, "\n")
     .replace(/<\/div>/gi, "\n")
     .replace(/<\/li>/gi, "\n")
+    .replace(/<\/tr>/gi, "\n")
+    .replace(/<\/td>/gi, " | ")
     .replace(/<[^>]+>/g, "")
     .replace(/&nbsp;/g, " ")
     .replace(/ /g, " ")
@@ -58,7 +64,7 @@ export async function GET(req: Request) {
     .replace(/[ \t]+/g, " ")
     .replace(/\n{3,}/g, "\n\n")
     .trim()
-    .slice(0, 5000);
+    .slice(0, 6000);
 
   const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jerusalem" }));
 

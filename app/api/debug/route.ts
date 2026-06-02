@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 const DOCS: Record<string, string> = {
   homework: "https://docs.google.com/document/u/0/d/1-BKxYj06sTwS69O9nmZQXIV9q5TEem6-So4gRzvKiU8/mobilebasic",
-  schedule: "https://docs.google.com/document/u/0/d/1K91Xi_QZXfY0ZJeAVpLR1Cd9NX-fLWrxrReVWzndl8M/mobilebasic",
+  schedule: "https://docs.google.com/document/d/1K91Xi_QZXfY0ZJeAVpLR1Cd9NX-fLWrxrReVWzndl8M/export?format=txt",
 };
 
 function parseTable(html: string): string[][] {

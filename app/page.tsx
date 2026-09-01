@@ -5,6 +5,7 @@
  */
 
 import { fetchDayData, type SubjectEntry } from "@/lib/parseDoc";
+import { WEEKLY_SCHEDULE, DAILY_ALWAYS } from "@/lib/schedule";
 import s from "./page.module.css";
 
 // Subject badge colours
@@ -100,8 +101,18 @@ function SubjectList({ items, emptyMsg }: { items: SubjectEntry[]; emptyMsg: str
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
+function israelNow() {
+  return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jerusalem" }));
+}
+
 export default async function Home() {
   const data = await fetchDayData();
+
+  // Compute tomorrow's schedule from static weekly table
+  const today = israelNow();
+  const dow = today.getDay();
+  const tomorrowDow = dow === 5 ? 0 : dow === 6 ? 0 : dow + 1;
+  const tomorrowSchedule = WEEKLY_SCHEDULE[tomorrowDow] ?? [];
 
   // Weekend / doc not updated yet
   if (!data) {
@@ -244,6 +255,34 @@ export default async function Home() {
           <div className={s.reminder}>
             <PinIcon />
             {data.reminder}
+          </div>
+        )}
+
+        {/* What to bring tomorrow */}
+        {tomorrowSchedule.length > 0 && (
+          <div className={s.bagBox}>
+            <p className={s.bagTitle}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <path d="M16 10a4 4 0 01-8 0" />
+              </svg>
+              מה להביא מחר?
+            </p>
+            <ul className={s.bagList}>
+              {tomorrowSchedule.map((item) => (
+                <li key={item.subject} className={s.bagItem}>
+                  <span className={s.bagSubject}>{item.subject}</span>
+                  {item.materials && (
+                    <span className={s.bagMaterials}>{item.materials}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <p className={s.bagAlways}>
+              + תמיד בתיק: {DAILY_ALWAYS.join(" · ")}
+            </p>
           </div>
         )}
 

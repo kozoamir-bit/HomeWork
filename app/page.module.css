@@ -265,6 +265,67 @@
   text-align: center;
 }
 
+/* ── Bag / what-to-bring box ─────────────────────────────────────────────── */
+
+.bagBox {
+  background: #E3F2FD;
+  border: 3px solid #64B5F6;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-top: 8px;
+  direction: rtl;
+}
+
+.bagTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0D47A1;
+  margin: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bagList {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bagItem {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.bagSubject {
+  font-weight: 700;
+  color: #1565C0;
+  white-space: nowrap;
+}
+
+.bagMaterials {
+  color: #333;
+  font-size: 12px;
+}
+
+.bagMaterials::before {
+  content: "— ";
+  color: #999;
+}
+
+.bagAlways {
+  font-size: 11px;
+  color: #666;
+  margin: 0;
+  border-top: 1px dashed #90CAF9;
+  padding-top: 6px;
+}
+
 /* ── Empty-day state ──────────────────────────────────────────────────────── */
 
 .emptyDay {

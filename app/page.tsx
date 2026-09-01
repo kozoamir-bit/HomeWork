@@ -232,24 +232,6 @@ export default async function Home() {
           </div>
         )}
 
-        {/* Tomorrow's subjects */}
-        {data.tomorrow.length > 0 && (
-          <div className={s.tomorrowBox}>
-            <p className={s.tomorrowTitle}>מה לומדים מחר?</p>
-            <div className={s.tomorrowBadges}>
-              {data.tomorrow.map((item) => (
-                <span
-                  key={item.subject}
-                  className={s.tomorrowBadge}
-                  style={{ background: COLORS[item.subject] ?? "#666" }}
-                >
-                  {item.subject}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Reminder */}
         {data.reminder && (
           <div className={s.reminder}>
@@ -261,15 +243,7 @@ export default async function Home() {
         {/* What to bring tomorrow */}
         {tomorrowSchedule.length > 0 && (
           <div className={s.bagBox}>
-            <p className={s.bagTitle}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <path d="M16 10a4 4 0 01-8 0" />
-              </svg>
-              מה להביא מחר?
-            </p>
+            <p className={s.bagTitle}>מה להביא מחר?</p>
             <ul className={s.bagList}>
               {tomorrowSchedule.map((item) => (
                 <li key={item.subject} className={s.bagItem}>

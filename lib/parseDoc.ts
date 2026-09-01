@@ -22,6 +22,7 @@ const HE_DAYS: Record<number, string> = {
 };
 
 const HOMEWORK_LABELS = ["שיעורי בית", "שעורי בית", "תרגול מקדם", "תרגול"];
+const NOT_A_SUBJECT = ["תרגול מקדם", "תרגול", "שיעורי בית", "שעורי בית"];
 
 function israelNow(): Date {
   return new Date(
@@ -141,7 +142,9 @@ export async function fetchDayData(): Promise<DayData | null> {
   const seenTomorrow = new Set<string>();
   for (const r of learnedRows) {
     const subject = normalizeLabel(rows[r][0] ?? "");
-    if (!subject || isHomeworkLabel(subject) || seenTomorrow.has(subject)) continue;
+    const isExcluded = isHomeworkLabel(subject) ||
+      NOT_A_SUBJECT.some((x) => subject === x || subject.startsWith(x));
+    if (!subject || isExcluded || seenTomorrow.has(subject)) continue;
     seenTomorrow.add(subject);
     tomorrow.push({ subject, content: tomorrowCol > 0 ? cellAt(r, tomorrowCol) : "" });
   }

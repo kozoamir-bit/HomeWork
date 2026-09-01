@@ -229,7 +229,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 
 .tomorrowBadge {

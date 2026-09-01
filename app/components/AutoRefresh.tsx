@@ -5,6 +5,7 @@ import { useEffect } from "react";
 export default function AutoRefresh() {
   const router = useRouter();
   useEffect(() => {
+    router.refresh();
     const onVisibility = () => {
       if (!document.hidden) router.refresh();
     };

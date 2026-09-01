@@ -80,7 +80,7 @@ function isHomeworkLabel(label: string): boolean {
 export async function fetchDayData(): Promise<DayData | null> {
   let html: string;
   try {
-    const res = await fetch(DOC_URL, { next: { revalidate: 1800 } });
+    const res = await fetch(DOC_URL, { cache: "no-store" });
     if (!res.ok) return null;
     html = await res.text();
   } catch {

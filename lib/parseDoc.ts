@@ -1,10 +1,3 @@
-/**
- * parseDoc.ts
- * Fetches the Google Doc weekly plan and extracts today's data.
- * No API keys needed – the doc is public (mobilebasic URL).
- * Cached by Next.js for 30 minutes to avoid hammering Google.
- */
-
 const DOC_URL =
   "https://docs.google.com/document/u/0/d/1-BKxYj06sTwS69O9nmZQXIV9q5TEem6-So4gRzvKiU8/mobilebasic";
 
@@ -27,6 +20,8 @@ const HE_DAYS: Record<number, string> = {
   4: "יום חמישי",
   5: "יום שישי",
 };
+
+const HOMEWORK_LABELS = ["שיעורי בית", "שעורי בית", "תרגול מקדם", "תרגול"];
 
 function israelNow(): Date {
   return new Date(
@@ -73,6 +68,10 @@ function findColByDayName(headerRow: string[], dayName: string): number {
   return -1;
 }
 
+function isHomeworkLabel(label: string): boolean {
+  return HOMEWORK_LABELS.some((l) => label.includes(l));
+}
+
 export async function fetchDayData(): Promise<DayData | null> {
   let html: string;
   try {
@@ -84,52 +83,61 @@ export async function fetchDayData(): Promise<DayData | null> {
   }
 
   const rows = parseTable(html);
-  if (rows.length < 7) return null;
+  if (rows.length < 5) return null;
 
   const today = israelNow();
   const dayOfWeek = today.getDay();
-  if (dayOfWeek === 6) return null; // Shabbat
+  if (dayOfWeek === 6) return null;
 
   const headerRow = rows[0];
-
-  // Find today's column by Hebrew day name (doc dates may be wrong)
   const todayName = HE_DAYS[dayOfWeek];
   const colIndex = findColByDayName(headerRow, todayName);
   if (colIndex === -1) return null;
 
-  // Find tomorrow's column (skip Shabbat)
+  // Tomorrow: skip to Sunday only if doc typically has it (Friday → -1)
   const tomorrowDow = dayOfWeek === 5 ? 0 : dayOfWeek + 1;
-  const tomorrowName = HE_DAYS[tomorrowDow];
   const tomorrowCol = tomorrowDow === 0
-    ? -1  // Sunday is next week – doc not yet updated
-    : findColByDayName(headerRow, tomorrowName);
+    ? -1
+    : findColByDayName(headerRow, HE_DAYS[tomorrowDow]);
 
   const dateLabel = `${todayName} ${today.getDate()}.${today.getMonth() + 1}`;
 
-  const cell = (rowIdx: number, col: number = colIndex): string =>
+  const cellAt = (rowIdx: number, col: number): string =>
     rows[rowIdx]?.[col]?.trim() ?? "";
 
-  const subject = (rowIdx: number): string =>
-    rows[rowIdx]?.[0]?.trim() ?? "";
+  // ── Classify rows dynamically ─────────────────────────────────────────────
+  // Skip row 0 (header) and row 1 (morning reading)
+  // Split on: empty label row OR row whose label is a homework section header
+  let inHomework = false;
+  const learnedRows: number[] = [];
+  const homeworkRows: number[] = [];
 
-  // Row 0: headers | 1: קריאת בוקר | 2-4: learned | 5: separator | 6-8: homework
-  const learnedRows = [2, 3, 4];
-  const homeworkRows = [6, 7, 8];
+  for (let i = 2; i < rows.length; i++) {
+    const label = rows[i]?.[0]?.trim() ?? "";
+    if (!label) { inHomework = true; continue; }
+    if (isHomeworkLabel(label)) { inHomework = true; }
+    if (inHomework) {
+      if (!isHomeworkLabel(label)) homeworkRows.push(i);
+    } else {
+      learnedRows.push(i);
+    }
+  }
 
   const learned: SubjectEntry[] = learnedRows
-    .map((r) => ({ subject: subject(r), content: cell(r) }))
+    .map((r) => ({ subject: rows[r][0].trim(), content: cellAt(r, colIndex) }))
     .filter((e) => e.content);
 
   const homework: SubjectEntry[] = homeworkRows
-    .map((r) => ({ subject: subject(r), content: cell(r) }))
+    .map((r) => ({ subject: rows[r][0].trim(), content: cellAt(r, colIndex) }))
     .filter((e) => e.content);
 
-  const tomorrow: SubjectEntry[] =
-    tomorrowCol > 0
-      ? learnedRows
-          .map((r) => ({ subject: subject(r), content: cell(r, tomorrowCol) }))
-          .filter((e) => e.content)
-      : [];
+  // Tomorrow: show subject name even if cell is empty
+  const tomorrow: SubjectEntry[] = learnedRows
+    .map((r) => ({
+      subject: rows[r][0].trim(),
+      content: tomorrowCol > 0 ? cellAt(r, tomorrowCol) : "",
+    }))
+    .filter((e) => e.subject);
 
   let morningReading: string | null = null;
   let reminder: string | null = null;

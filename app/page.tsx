@@ -68,6 +68,16 @@ function Star() {
   );
 }
 
+function ContentLines({ text }: { text: string }) {
+  return (
+    <>
+      {text.split("\n").filter((l) => l.trim()).map((line, i) => (
+        <span key={i} className={s.contentLine}>{line}</span>
+      ))}
+    </>
+  );
+}
+
 function SubjectList({ items, emptyMsg }: { items: SubjectEntry[]; emptyMsg: string }) {
   if (items.length === 0) {
     return <p className={s.emptyItems}>{emptyMsg}</p>;
@@ -79,7 +89,9 @@ function SubjectList({ items, emptyMsg }: { items: SubjectEntry[]; emptyMsg: str
           <span className={s.badge} style={{ background: COLORS[item.subject] ?? "#666" }}>
             {item.subject}
           </span>
-          <p className={s.entryText}>{item.content}</p>
+          <p className={s.entryText}>
+            <ContentLines text={item.content} />
+          </p>
         </div>
       ))}
     </>
@@ -158,10 +170,10 @@ export default async function Home() {
         {/* Header */}
         <header className={s.header}>
           <h1 className={s.title}>לוח הכיתה שלנו</h1>
-          <p className={s.subtitle}>כיתה א׳1</p>
+          <p className={s.subtitle}>כיתה ב׳1</p>
           <span className={s.dateBadge}>
             <CalendarIcon />
-            {data.dayName} · {data.dateLabel}
+            {data.dateLabel}
           </span>
         </header>
 
@@ -200,6 +212,32 @@ export default async function Home() {
 
         {/* Spacer for chalk ledge */}
         <div className={s.ledgeSpacer} />
+
+        {/* Morning reading */}
+        {data.morningReading && (
+          <div className={s.morningReading}>
+            <BookIcon />
+            <span><ContentLines text={data.morningReading} /></span>
+          </div>
+        )}
+
+        {/* Tomorrow's subjects */}
+        {data.tomorrow.length > 0 && (
+          <div className={s.tomorrowBox}>
+            <p className={s.tomorrowTitle}>מה לומדים מחר?</p>
+            <div className={s.tomorrowBadges}>
+              {data.tomorrow.map((item) => (
+                <span
+                  key={item.subject}
+                  className={s.tomorrowBadge}
+                  style={{ background: COLORS[item.subject] ?? "#666" }}
+                >
+                  {item.subject}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Reminder */}
         {data.reminder && (

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "לוח הכיתה – א׳1",
+  title: "לוח הכיתה – ב׳1",
   description: "מה למדנו היום ומה שיעורי הבית",
 };
 

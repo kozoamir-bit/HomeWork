@@ -151,8 +151,10 @@
   font-size: 14px;
   line-height: 1.65;
   padding-right: 4px;
-  white-space: pre-line;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 /* ── Empty / success states ───────────────────────────────────────────────── */
@@ -186,6 +188,65 @@
 /* ── Ledge spacer ─────────────────────────────────────────────────────────── */
 
 .ledgeSpacer { height: 18px; }
+
+/* ── Morning reading ──────────────────────────────────────────────────────── */
+
+.morningReading {
+  background: #E8F5E9;
+  border: 3px solid #66BB6A;
+  border-radius: 14px;
+  padding: 12px 18px;
+  font-size: 14px;
+  color: #1B5E20;
+  font-weight: 600;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  direction: rtl;
+  margin-bottom: 12px;
+}
+
+/* ── Tomorrow box ─────────────────────────────────────────────────────────── */
+
+.tomorrowBox {
+  background: #F3F0FF;
+  border: 3px solid #9575CD;
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 12px;
+  direction: rtl;
+  text-align: right;
+}
+
+.tomorrowTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #4527A0;
+  margin: 0 0 10px;
+}
+
+.tomorrowBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.tomorrowBadge {
+  display: inline-block;
+  color: #fff;
+  padding: 4px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ── Content lines ────────────────────────────────────────────────────────── */
+
+.contentLine {
+  display: block;
+  text-align: right;
+}
 
 /* ── Reminder banner ──────────────────────────────────────────────────────── */
 

@@ -11,10 +11,11 @@ const DOC_URL =
 export type SubjectEntry = { subject: string; content: string };
 
 export type DayData = {
-  dayName: string;
   dateLabel: string;
   learned: SubjectEntry[];
   homework: SubjectEntry[];
+  tomorrow: SubjectEntry[];
+  morningReading: string | null;
   reminder: string | null;
 };
 
@@ -27,37 +28,36 @@ const HE_DAYS: Record<number, string> = {
   5: "יום שישי",
 };
 
-/** Returns a Date object in Israel local time */
 function israelNow(): Date {
   return new Date(
     new Date().toLocaleString("en-US", { timeZone: "Asia/Jerusalem" })
   );
 }
 
-/** e.g. "27.5" for May 27 */
-function todayPattern(d: Date): string {
-  return `${d.getDate()}.${d.getMonth() + 1}`;
-}
-
-/** Minimal HTML table parser – no dependencies needed */
 function parseTable(html: string): string[][] {
   const rows: string[][] = [];
   const rowMatches = html.match(/<tr[\s\S]*?<\/tr>/gi) ?? [];
-
   for (const row of rowMatches) {
     const cells: string[] = [];
     const cellMatches = row.match(/<td[\s\S]*?<\/td>/gi) ?? [];
     for (const cell of cellMatches) {
-      // Strip tags, decode basic entities, normalise whitespace
       const text = cell
+        .replace(/<\/p>/gi, "\n")
+        .replace(/<\/div>/gi, "\n")
         .replace(/<br\s*\/?>/gi, "\n")
         .replace(/<[^>]+>/g, "")
         .replace(/&nbsp;/g, " ")
+        .replace(/ /g, " ")
         .replace(/&#39;/g, "'")
+        .replace(/&quot;/g, '"')
+        .replace(/&#34;/g, '"')
         .replace(/&amp;/g, "&")
         .replace(/&lt;/g, "<")
         .replace(/&gt;/g, ">")
         .replace(/[ \t]+/g, " ")
+        .replace(/\n /g, "\n")
+        .replace(/ \n/g, "\n")
+        .replace(/\n{2,}/g, "\n")
         .trim();
       cells.push(text);
     }
@@ -66,12 +66,17 @@ function parseTable(html: string): string[][] {
   return rows;
 }
 
+function findColByDayName(headerRow: string[], dayName: string): number {
+  for (let i = 0; i < headerRow.length; i++) {
+    if (headerRow[i].includes(dayName)) return i;
+  }
+  return -1;
+}
+
 export async function fetchDayData(): Promise<DayData | null> {
   let html: string;
   try {
-    const res = await fetch(DOC_URL, {
-      next: { revalidate: 1800 }, // cache 30 min
-    });
+    const res = await fetch(DOC_URL, { next: { revalidate: 1800 } });
     if (!res.ok) return null;
     html = await res.text();
   } catch {
@@ -82,43 +87,32 @@ export async function fetchDayData(): Promise<DayData | null> {
   if (rows.length < 7) return null;
 
   const today = israelNow();
-  const dayOfWeek = today.getDay(); // 0=Sun … 6=Sat
+  const dayOfWeek = today.getDay();
   if (dayOfWeek === 6) return null; // Shabbat
 
-  const pattern = todayPattern(today);
-
-  // ── Find column index by matching today's date in the header row ──────────
   const headerRow = rows[0];
-  let colIndex = -1;
-  for (let i = 0; i < headerRow.length; i++) {
-    if (headerRow[i].includes(pattern)) {
-      colIndex = i;
-      break;
-    }
-  }
-  if (colIndex === -1) return null; // Doc not yet updated for this week
 
-  const dateLabel = headerRow[colIndex].replace(/\s+/g, " ").trim();
+  // Find today's column by Hebrew day name (doc dates may be wrong)
+  const todayName = HE_DAYS[dayOfWeek];
+  const colIndex = findColByDayName(headerRow, todayName);
+  if (colIndex === -1) return null;
 
-  // Helper: get cell text at today's column for a given row index
-  const cell = (rowIdx: number): string =>
-    rows[rowIdx]?.[colIndex]?.trim() ?? "";
+  // Find tomorrow's column (skip Shabbat)
+  const tomorrowDow = dayOfWeek === 5 ? 0 : dayOfWeek + 1;
+  const tomorrowName = HE_DAYS[tomorrowDow];
+  const tomorrowCol = tomorrowDow === 0
+    ? -1  // Sunday is next week – doc not yet updated
+    : findColByDayName(headerRow, tomorrowName);
 
-  // Helper: get the subject label (first column) for a row
+  const dateLabel = `${todayName} ${today.getDate()}.${today.getMonth() + 1}`;
+
+  const cell = (rowIdx: number, col: number = colIndex): string =>
+    rows[rowIdx]?.[col]?.trim() ?? "";
+
   const subject = (rowIdx: number): string =>
     rows[rowIdx]?.[0]?.trim() ?? "";
 
-  // Table structure (row indices may shift if teacher adds rows – adjust here if needed):
-  // Row 0: day headers
-  // Row 1: morning reading reminder (label col = "קריאת בוקר")
-  // Row 2: שפה  (learned)
-  // Row 3: חשבון (learned)
-  // Row 4: תורה  (learned)
-  // Row 5: empty separator
-  // Row 6: שפה  (homework)
-  // Row 7: חשבון (homework)
-  // Row 8: אחר  (homework)
-
+  // Row 0: headers | 1: קריאת בוקר | 2-4: learned | 5: separator | 6-8: homework
   const learnedRows = [2, 3, 4];
   const homeworkRows = [6, 7, 8];
 
@@ -130,17 +124,25 @@ export async function fetchDayData(): Promise<DayData | null> {
     .map((r) => ({ subject: subject(r), content: cell(r) }))
     .filter((e) => e.content);
 
-  // Reminder – look for a paragraph containing "שימו לב"
-  const reminderMatch = html.match(/שימו לב[^<]{0,300}/);
-  const reminder = reminderMatch
-    ? reminderMatch[0].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim()
-    : null;
+  const tomorrow: SubjectEntry[] =
+    tomorrowCol > 0
+      ? learnedRows
+          .map((r) => ({ subject: subject(r), content: cell(r, tomorrowCol) }))
+          .filter((e) => e.content)
+      : [];
 
-  return {
-    dayName: HE_DAYS[dayOfWeek] ?? "",
-    dateLabel,
-    learned,
-    homework,
-    reminder,
-  };
+  let morningReading: string | null = null;
+  let reminder: string | null = null;
+  for (const row of rows) {
+    const label = row[0]?.trim() ?? "";
+    if (label.includes("קריאת בוקר")) {
+      const content = (row[colIndex] || row[1])?.trim();
+      if (content) morningReading = content;
+    } else if (label.includes("שימו לב") || label.includes("הערה")) {
+      const content = (row[colIndex] || row[1])?.trim();
+      if (content) reminder = content;
+    }
+  }
+
+  return { dateLabel, learned, homework, tomorrow, morningReading, reminder };
 }

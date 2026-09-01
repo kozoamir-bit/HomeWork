@@ -131,13 +131,15 @@ export async function fetchDayData(): Promise<DayData | null> {
     .map((r) => ({ subject: rows[r][0].trim(), content: cellAt(r, colIndex) }))
     .filter((e) => e.content);
 
-  // Tomorrow: show subject name even if cell is empty
-  const tomorrow: SubjectEntry[] = learnedRows
-    .map((r) => ({
-      subject: rows[r][0].trim(),
-      content: tomorrowCol > 0 ? cellAt(r, tomorrowCol) : "",
-    }))
-    .filter((e) => e.subject);
+  // Tomorrow: deduplicate by subject name, skip homework-label rows
+  const tomorrow: SubjectEntry[] = [];
+  const seenTomorrow = new Set<string>();
+  for (const r of learnedRows) {
+    const subject = rows[r][0].trim();
+    if (!subject || isHomeworkLabel(subject) || seenTomorrow.has(subject)) continue;
+    seenTomorrow.add(subject);
+    tomorrow.push({ subject, content: tomorrowCol > 0 ? cellAt(r, tomorrowCol) : "" });
+  }
 
   let morningReading: string | null = null;
   let reminder: string | null = null;

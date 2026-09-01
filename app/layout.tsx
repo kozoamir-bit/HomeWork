@@ -4,7 +4,7 @@ import AutoRefresh from "./components/AutoRefresh";
 import ShareButton from "./components/ShareButton";
 
 export const metadata: Metadata = {
-  title: "לוח הכיתה – א׳1",
+  title: "לוח הכיתה – ב׳1",
   description: "מה למדנו היום ומה שיעורי הבית",
 };
 

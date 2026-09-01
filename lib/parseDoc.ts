@@ -68,8 +68,13 @@ function findColByDayName(headerRow: string[], dayName: string): number {
   return -1;
 }
 
+function normalizeLabel(label: string): string {
+  return label.replace(/\s+/g, " ").trim();
+}
+
 function isHomeworkLabel(label: string): boolean {
-  return HOMEWORK_LABELS.some((l) => label.includes(l));
+  const n = normalizeLabel(label);
+  return HOMEWORK_LABELS.some((l) => n.includes(l));
 }
 
 export async function fetchDayData(): Promise<DayData | null> {
@@ -113,7 +118,7 @@ export async function fetchDayData(): Promise<DayData | null> {
   const homeworkRows: number[] = [];
 
   for (let i = 2; i < rows.length; i++) {
-    const label = rows[i]?.[0]?.trim() ?? "";
+    const label = normalizeLabel(rows[i]?.[0] ?? "");
     if (!label) { inHomework = true; continue; }
     if (isHomeworkLabel(label)) { inHomework = true; }
     if (inHomework) {
@@ -135,7 +140,7 @@ export async function fetchDayData(): Promise<DayData | null> {
   const tomorrow: SubjectEntry[] = [];
   const seenTomorrow = new Set<string>();
   for (const r of learnedRows) {
-    const subject = rows[r][0].trim();
+    const subject = normalizeLabel(rows[r][0] ?? "");
     if (!subject || isHomeworkLabel(subject) || seenTomorrow.has(subject)) continue;
     seenTomorrow.add(subject);
     tomorrow.push({ subject, content: tomorrowCol > 0 ? cellAt(r, tomorrowCol) : "" });

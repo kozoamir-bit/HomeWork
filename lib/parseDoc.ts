@@ -21,10 +21,8 @@ const HE_DAYS: Record<number, string> = {
   5: "יום שישי",
 };
 
-// Rows that mark the START of the homework section — not subjects themselves
-const HOMEWORK_SECTION_HEADERS = ["שיעורי בית", "שעורי בית"];
-// Rows that ARE homework subjects and belong in the homework list
-const HOMEWORK_SUBJECT_LABELS = ["תרגול מקדם", "תרגול"];
+// Rows that mark the START of the homework section (merged rows, no per-day content)
+const HOMEWORK_SECTION_HEADERS = ["שיעורי בית", "שעורי בית", "תרגול מקדם", "תרגול"];
 
 function israelNow(): Date {
   return new Date(
@@ -75,6 +73,7 @@ function normalizeLabel(label: string): string {
   let out = "";
   for (const ch of label) {
     const cp = ch.codePointAt(0) ?? 0;
+    // strip invisible/directional chars
     if (
       cp <= 0x1f || cp === 0x7f || cp === 0xad ||
       (cp >= 0x200b && cp <= 0x200f) ||
@@ -82,6 +81,8 @@ function normalizeLabel(label: string): string {
       (cp >= 0x2060 && cp <= 0x206f) ||
       cp === 0xfeff
     ) continue;
+    // strip Hebrew nikud (vowel points U+05B0-U+05C7) and cantillation (U+0591-U+05AF)
+    if ((cp >= 0x0591 && cp <= 0x05C7)) continue;
     out += ch;
   }
   return out.replace(/\s+/g, " ").trim();
@@ -90,11 +91,6 @@ function normalizeLabel(label: string): string {
 function isSectionHeader(label: string): boolean {
   const n = normalizeLabel(label);
   return HOMEWORK_SECTION_HEADERS.some((h) => n.includes(h));
-}
-
-function isHomeworkSubject(label: string): boolean {
-  const n = normalizeLabel(label);
-  return HOMEWORK_SUBJECT_LABELS.some((h) => n.includes(h));
 }
 
 export async function fetchDayData(): Promise<DayData | null> {
@@ -141,8 +137,7 @@ export async function fetchDayData(): Promise<DayData | null> {
     const label = normalizeLabel(rows[i]?.[0] ?? "");
     if (!label) { inHomework = true; continue; }
     if (isSectionHeader(label)) { inHomework = true; continue; }
-    if (isHomeworkSubject(label) || inHomework) {
-      inHomework = true;
+    if (inHomework) {
       homeworkRows.push(i);
     } else {
       learnedRows.push(i);
